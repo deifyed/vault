@@ -1,0 +1,50 @@
+#!/usr/bin/python3
+import argparse
+from libvault import Vault
+
+NAME = ''
+DESCRIPTION = '''Saves a file or a directory to a predefined location for easy version control backup'''
+
+parser = argparse.ArgumentParser(description=DESCRIPTION)
+
+# Deploying one or more secured files
+parser.add_argument('-d', '--deploy', metavar='id', type=int, nargs='+',
+        help='deploys one or several file(s) or folder(s) from the vault to the original location')
+parser.add_argument('--deploy-all', action='store_true',
+        help='deploys all the files in the vault. Useful for restoring after a reinstall of os')
+# Listing saved files and folders
+parser.add_argument('-l', '--list', action='store_true',
+        help='lists all secured files and folders')
+# Unsecure a file or folder
+parser.add_argument('-r', '--remove', metavar='target', type=str,
+        help='remove target from vault and restores the original')
+# Secure a file or folder
+parser.add_argument('-s', '--secure', metavar='target', type=str,
+        help='secure target file or folder')
+# Verbose
+parser.add_argument('-v', '--verbose', action='store_true',
+        help='enable verbose messages')
+
+args = parser.parse_args()
+
+vault = Vault(verbose=args.verbose)
+
+if(args.secure):
+    print('Securing {}'.format(args.secure))
+    vault.secure(args.secure)
+
+if(args.deploy_all):
+    print('Deploying all items')
+    vault.deployAll()
+elif(args.deploy):
+    print('Deploying {}'.format(args.deploy))
+    vault.deploy(args.deploy)
+
+if(args.remove):
+    print('Removing {}'.format(args.remove))
+    vault.remove(args.remove)
+
+if(args.list):
+    print('id\tname\tpath')
+    for iid, name, path in vault.list():
+        print('[{}]\t{}\t{}'.format(iid, name, path))
