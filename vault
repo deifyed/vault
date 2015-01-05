@@ -16,11 +16,13 @@ parser.add_argument('--deploy-all', action='store_true',
 parser.add_argument('-l', '--list', action='store_true',
         help='lists all secured files and folders')
 # Unsecure a file or folder
-parser.add_argument('-r', '--remove', metavar='target', type=str,
+parser.add_argument('--remove', metavar='target', type=str,
         help='remove target from vault and restores the original')
 # Secure a file or folder
 parser.add_argument('-s', '--secure', metavar='target', type=str,
         help='secure target file or folder')
+parser.add_argument('-r', '--recursive', action='store_true',
+        help='flag neccesary to continue securing recursively into a directory')
 # Verbose
 parser.add_argument('-v', '--verbose', action='store_true',
         help='enable verbose messages')
@@ -31,7 +33,7 @@ vault = Vault(verbose=args.verbose)
 
 if(args.secure):
     print('Securing {}'.format(args.secure))
-    vault.secure(args.secure)
+    vault.secure(args.secure, args.recursive)
 
 if(args.deploy_all):
     print('Deploying all items')

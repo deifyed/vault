@@ -1,6 +1,5 @@
 from os import (
         link,
-        symlink,
         rename as mv,
         replace,
         makedirs,
@@ -72,12 +71,32 @@ class Vault():
         else:
             symlink(vaultpath, realpath)
 
-    def secure(self, target):
+    def secure(self, target, recursive):
         '''
             Saves information about a target file or a folder and proceedes to:
             moves target to the vault directory and
             links the target in the vault to the original path
         '''
+        if os.path.isfile(target):
+            return self._secureFile(self, target)
+
+        self._secureFolder(target, recursive)
+
+    def _secureFolder(self, target, recursive):
+        if os.path.isfile(target):
+            return self._secureFile(target)
+
+        if recursive:
+            directory_items = os.walk(target)
+        else:
+            directory_items = [target, [], os.listdir(target)]
+
+        for dir_name, folders, files in directory_items:
+            for f in files:
+                self._secureFile(os.path.join(dir_name, f))
+
+
+    def _secureFile(self, target):
         # Get path information
         target = os.path.realpath(target)
         # Extract and seperate path and name of target
@@ -96,36 +115,25 @@ class Vault():
         if not _id:
             return
 
-        self._verbose('Moving target to vault directory')
-        new_path = VAULT_DIR + str(_id)
-        mv(target, new_path)
-
         # Link the vaulted target back to the original path
         self._verbose('Linking target from vault to origin')
-        if os.path.isdir(new_path):
-            symlink(new_path, target)
-        else:
-            link(new_path, target)
+        link(target, os.path.join(VAULT_DIR, str(_id)))
 
         self._verbose('Securing finished')
 
     def remove(self, iid):
         '''
-            Moves a target from the vault and to its original place
-            Deletes information about target
+            Deletes file from vault and removes database information
         '''
         target = self._getTarget(iid)
-        origin = VAULT_DIR + str(iid)
+        vault_file = VAULT_DIR + str(iid)
 
-        self._verbose('Replacing vaulted target with placeholder {}'.format(
-            [iid, target['name'], target['path']]
-        ))
-        self._deploy(iid, target['path'], target['name'])
-        os.remove(origin)
+        # Removes the link from the vault
+        os.remove(vault_file)
 
         self._verbose('Removing target information from database')
         sql = '''delete from {} where _id=?'''.format(TABLE_ITEMS)
-        self.db.execute(sql, (iid))
+        self.db.execute(sql, (iid,))
         self.db.commit()
 
         self._verbose('Remove complete')
