@@ -1,0 +1,3 @@
+* Implement multiple file adding
+* Implement adding directory support?
+        - Might be able to get away with recursively adding files
