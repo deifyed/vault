@@ -1,3 +1,3 @@
-from libvault.vault import Vault
+from libconman.vault import Vault
 
 __all__ = ['Vault']

@@ -19,7 +19,7 @@ parser.add_argument('-l', '--list', action='store_true',
 parser.add_argument('--remove', metavar='target', type=str,
         help='remove target from vault and restores the original')
 # Secure a file or folder
-parser.add_argument('-s', '--secure', metavar='target', type=str,
+parser.add_argument('-s', '--secure', metavar='target', type=str, nargs='+',
         help='secure target file or folder')
 parser.add_argument('-r', '--recursive', action='store_true',
         help='flag neccesary to continue securing recursively into a directory')
@@ -48,5 +48,5 @@ if(args.remove):
 
 if(args.list):
     print('id\tname\tpath')
-    for iid, name, path in vault.list():
+    for iid, name, path in vault.listTargets():
         print('[{}]\t{}\t{}'.format(iid, name, path))

@@ -6,63 +6,31 @@ from os import (
 )
 
 import os.path
-import sqlite3
 
-VAULT_DIR = os.path.expanduser('~') + '/.conman/'
-DB_PATH = VAULT_DIR + '.condb'
-
-# Tables
-TABLE_ITEMS = 'items'
+# Custom imports
+from libconman.configuration import config
+from libconman.database import DataCommunicator
 
 class Vault():
     def __init__(self, verbose=False):
         self.verbose = verbose
+        self.VAULT_DIR = config['general']['conman_directory']
 
         # Creates the vault directory if it doesn't exist
-        if not os.path.isdir(VAULT_DIR):
-            os.mkdir(VAULT_DIR)
+        if not os.path.isdir(self.VAULT_DIR):
+            os.mkdir(self.VAULT_DIR)
 
-        self.db = self._getDatabase()
+        self.db = DataCommunicator()
 
     def _verbose(self, msg):
         ''' Prints msg if verbose flag is set to True '''
         if self.verbose:
             print(msg)
 
-    def _getDatabase(self):
-        '''
-            Returns a sqlite3 database object.
-            Creates new and initializes if file didn't exist
-        '''
-        sql = None
-
-        if not os.path.isfile(DB_PATH):
-            sql = '''create table if not exists {} (
-                _id integer primary key autoincrement,
-                name varchar(254),
-                path varchar(254),
-                UNIQUE(name, path)
-            );'''.format(TABLE_ITEMS)
-        
-        db = sqlite3.connect(DB_PATH)
-
-        if sql:
-            db.execute(sql)
-
-        return db
-
-    def _getTarget(self, iid):
-        ''' Returns a dictionary containing information about a certain target '''
-        self._verbose('Fetching information about target {} from database'.format(iid))
-        sql = '''select name, path from {} where _id=?'''.format(TABLE_ITEMS)
-        name, path = self.db.execute(sql, (iid,)).fetchone()
-
-        return {'name':name, 'path':path}
-
     def _deploy(self, iid, path, name):
         ''' Creates a link at path with name from the vault file iid '''
         realpath = os.path.join(path, name)
-        vaultpath = VAULT_DIR + str(iid)
+        vaultpath = os.path.join(self.VAULT_DIR, str(iid))
 
         if not os.path.exists(path):
             makedirs(path)
@@ -77,7 +45,7 @@ class Vault():
         '''
         for target in targets:
             if os.path.isfile(target):
-                self._secureFile(self, target)
+                self._secureFile(target)
             else:
                 self._secureFolder(target, recursive)
 
@@ -85,7 +53,12 @@ class Vault():
         if recursive:
             directory_items = os.walk(target)
         else:
-            directory_items = [target, [], os.listdir(target)]
+            items = []
+            for item in os.listdir(target):
+                if os.path.isfile(os.path.join(target, item)):
+                    items.append(item)
+
+            directory_items = [(target, [], items)]
 
         for dir_name, folders, files in directory_items:
             for f in files:
@@ -100,20 +73,15 @@ class Vault():
 
         # Save information about the target into the database
         self._verbose('Entering target {} into database'.format(target))
-        sql = '''insert into {}(name, path) values (?,?);'''.format(TABLE_ITEMS)
-        try:
-            _id = self.db.execute(sql, (name, path)).lastrowid
-            self.db.commit()
-            self._verbose('Database commit successful')
-        except sqlite3.IntegrityError:
-            self._verbose('{} is already secured'.format(target))
+        _id = self.db.insertTarget(name, path) 
 
         if not _id:
+            self._verbose('{} is already secured'.format(target))
             return
 
         # Create a link in the vault
         self._verbose('Linking target from origin to vault')
-        link(target, os.path.join(VAULT_DIR, str(_id)))
+        link(target, os.path.join(self.VAULT_DIR, str(_id)))
 
         self._verbose('Securing finished')
 
@@ -121,16 +89,14 @@ class Vault():
         '''
             Deletes file from vault and removes database information
         '''
-        target = self._getTarget(iid)
-        vault_file = VAULT_DIR + str(iid)
+        target = self.db.getTarget(iid)
+        vault_file = os.path.join(self.VAULT_DIR, str(iid))
 
         # Removes the link from the vault
         os.remove(vault_file)
 
         self._verbose('Removing target information from database')
-        sql = '''delete from {} where _id=?'''.format(TABLE_ITEMS)
-        self.db.execute(sql, (iid,))
-        self.db.commit()
+        self.db.removeTarget(iid)
 
         self._verbose('Remove complete')
 
@@ -139,30 +105,28 @@ class Vault():
             Links an item from the vault to the original path
         '''
         for index in iid:
-            target = self._getTarget(index)
-            origin = VAULT_DIR + str(index)
+            target = self.db.getTarget(index)
+            origin = os.path.join(self.VAULT_DIR, str(index))
 
             self._verbose('Deploying id {} from {} to {} with the name {}'
                     .format(index, origin, target['path'], target['name']))
             self._deploy(index, target['path'], target['name'])
 
         self._verbose('Deploy complete')
+
     def deployAll(self):
         '''
             Deploys all the items from the vault
         '''
-        items = self.list()
+        items = [i for i, n, p in self.db.listTargets()]
 
-        for iid, name, path in items:
-            self.deploy(iid)
+        self.deploy(items)
 
         self._verbose('Deploy all complete')
 
-    def list(self):
+    def listTargets(self):
         '''
-            Returns a list of all the items secured in the vault
+            Returns a list of 3-tuples containing the data of all the secured
+            targets. (id, name, path)
         '''
-        sql = 'select * from {}'.format(TABLE_ITEMS)
-        cursor = self.db.execute(sql)
-
-        return [(iid, name, path) for iid, name, path in cursor]
+        return self.db.listTargets()
