@@ -18,6 +18,7 @@ class Vault():
     def __init__(self, verbose=False):
         self.verbose = verbose
 
+        # Creates the vault directory if it doesn't exist
         if not os.path.isdir(VAULT_DIR):
             os.mkdir(VAULT_DIR)
 
@@ -66,10 +67,7 @@ class Vault():
         if not os.path.exists(path):
             makedirs(path)
 
-        if os.path.isfile(vaultpath):
-            link(vaultpath, realpath)
-        else:
-            symlink(vaultpath, realpath)
+        link(vaultpath, realpath)
 
     def secure(self, target, recursive):
         '''
@@ -83,9 +81,6 @@ class Vault():
         self._secureFolder(target, recursive)
 
     def _secureFolder(self, target, recursive):
-        if os.path.isfile(target):
-            return self._secureFile(target)
-
         if recursive:
             directory_items = os.walk(target)
         else:
@@ -115,7 +110,7 @@ class Vault():
         if not _id:
             return
 
-        # Link the vaulted target back to the original path
+        # Create a link in the vault
         self._verbose('Linking target from vault to origin')
         link(target, os.path.join(VAULT_DIR, str(_id)))
 
