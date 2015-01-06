@@ -1,41 +1,34 @@
-from os import (
-        link,
-        rename as mv,
-        replace,
-        makedirs,
-)
-
+# Python libs
 import os.path
 
-# Custom imports
-from libconman.configuration import config
-from libconman.database import DataCommunicator
+# Custom libs
+from libconman.configuration import config, verbose
+from libconman.database import getDataCommunicator
+from libconman.target import Target
 
 class Vault():
-    def __init__(self, verbose=False):
-        self.verbose = verbose
+    def __init__(self):
         self.VAULT_DIR = config['general']['conman_directory']
 
         # Creates the vault directory if it doesn't exist
         if not os.path.isdir(self.VAULT_DIR):
             os.mkdir(self.VAULT_DIR)
 
-        self.db = DataCommunicator()
+        self.db = getDataCommunicator()
 
-    def _verbose(self, msg):
-        ''' Prints msg if verbose flag is set to True '''
-        if self.verbose:
-            print(msg)
+    def _secureFolder(self, target, recursive):
+        directory_items = os.walk(target)
 
-    def _deploy(self, iid, path, name):
-        ''' Creates a link at path with name from the vault file iid '''
-        realpath = os.path.join(path, name)
-        vaultpath = os.path.join(self.VAULT_DIR, str(iid))
+        # If recursive is false, fetch only the first tuple
+        if not recursive:
+            directory_items = [next(directory_items)]
 
-        if not os.path.exists(path):
-            makedirs(path)
+        targets = []
+        for dir_name, folders, files in directory_items:
+            for f in files:
+                targets.append(os.path.join(dir_name, f))
 
-        link(vaultpath, realpath)
+        return targets
 
     def secure(self, targets, recursive):
         '''
@@ -45,59 +38,21 @@ class Vault():
         '''
         for target in targets:
             if os.path.isfile(target):
-                self._secureFile(target)
+                path, name = os.path.split(target)
+
+                target = Target(name, path)
+                target.save()
+                target.secure()
             else:
-                self._secureFolder(target, recursive)
-
-    def _secureFolder(self, target, recursive):
-        if recursive:
-            directory_items = os.walk(target)
-        else:
-            items = []
-            for item in os.listdir(target):
-                if os.path.isfile(os.path.join(target, item)):
-                    items.append(item)
-
-            directory_items = [(target, [], items)]
-
-        for dir_name, folders, files in directory_items:
-            for f in files:
-                self._secureFile(os.path.join(dir_name, f))
-
-
-    def _secureFile(self, target):
-        # Get path information
-        target = os.path.realpath(target)
-        # Extract and seperate path and name of target
-        path, name = os.path.split(target)
-
-        # Save information about the target into the database
-        self._verbose('Entering target {} into database'.format(target))
-        _id = self.db.insertTarget(name, path) 
-
-        if not _id:
-            self._verbose('{} is already secured'.format(target))
-            return
-
-        # Create a link in the vault
-        self._verbose('Linking target from origin to vault')
-        link(target, os.path.join(self.VAULT_DIR, str(_id)))
-
-        self._verbose('Securing finished')
+                targets += self._secureFolder(target, recursive)
 
     def remove(self, iid):
         '''
             Deletes file from vault and removes database information
         '''
-        vault_file = os.path.join(self.VAULT_DIR, str(iid))
+        target = Target.getTarget(iid)
 
-        # Removes the link from the vault
-        os.remove(vault_file)
-
-        self._verbose('Removing target information from database')
-        self.db.removeTarget(iid)
-
-        self._verbose('Remove complete')
+        target.delete()
 
     def deploy(self, iid):
         '''
@@ -109,21 +64,22 @@ class Vault():
             if target:
                 origin = os.path.join(self.VAULT_DIR, str(index))
 
-                self._verbose('Deploying id {} from {} to {} with the name {}'
+                verbose('Deploying id {} from {} to {} with the name {}'
                         .format(index, origin, target['path'], target['name']))
                 self._deploy(index, target['path'], target['name'])
 
-        self._verbose('Deploy complete')
+        verbose('Deploy complete')
 
     def deployAll(self):
         '''
             Deploys all the items from the vault
         '''
-        items = [i for i, n, p in self.db.listTargets()]
+        targets = [Target.getTarget(iid) for i, n, p in self.db.listTargets()]
 
-        self.deploy(items)
+        for target in targets:
+            target.deploy()
 
-        self._verbose('Deploy all complete')
+        verbose('Deploy all complete')
 
     def listTargets(self):
         '''

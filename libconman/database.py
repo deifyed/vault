@@ -1,9 +1,11 @@
-# Python imports
+# Python libs
 import os.path
 import sqlite3
 
-# Custom imports
+# Custom libs
 from libconman.configuration import config
+
+__DATA_COMMUNICATOR = None
 
 class DataCommunicator():
     def __init__(self, verbose=False):
@@ -34,7 +36,7 @@ class DataCommunicator():
         data = self.db.execute(sql, (iid,)).fetchone()
 
         if data:
-            return {'name':data[0], 'path':data[1]}
+            return {'name': data[0], 'path': data[1]}
 
         return None
 
@@ -69,3 +71,11 @@ class DataCommunicator():
         cursor = self.db.execute(sql)
 
         return [(iid, name, path) for iid, name, path in cursor]
+
+def getDataCommunicator():
+    global __DATA_COMMUNICATOR
+
+    if not __DATA_COMMUNICATOR:
+        __DATA_COMMUNICATOR = DataCommunicator()
+
+    return __DATA_COMMUNICATOR

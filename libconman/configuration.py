@@ -11,6 +11,7 @@ _DEFAULTS = {
     # General settings
     'general': {
         'conman_directory': ROOT_DIR,
+        'verbose': False,
     },
 
     # Database specific settings
@@ -28,3 +29,8 @@ def initConfig():
     return config
 
 config = initConfig()
+
+### Tools
+def verbose(msg):
+    if config.getboolean('general', 'verbose'):
+        print(msg)
