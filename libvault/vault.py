@@ -69,16 +69,17 @@ class Vault():
 
         link(vaultpath, realpath)
 
-    def secure(self, target, recursive):
+    def secure(self, targets, recursive):
         '''
             Saves information about a target file or a folder and proceedes to:
             moves target to the vault directory and
             links the target in the vault to the original path
         '''
-        if os.path.isfile(target):
-            return self._secureFile(self, target)
-
-        self._secureFolder(target, recursive)
+        for target in targets:
+            if os.path.isfile(target):
+                self._secureFile(self, target)
+            else:
+                self._secureFolder(target, recursive)
 
     def _secureFolder(self, target, recursive):
         if recursive:
@@ -137,9 +138,6 @@ class Vault():
         '''
             Links an item from the vault to the original path
         '''
-        if type(iid) == int:
-            iid = [iid,]
-        
         for index in iid:
             target = self._getTarget(index)
             origin = VAULT_DIR + str(index)
