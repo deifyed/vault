@@ -31,9 +31,12 @@ class DataCommunicator():
         '''
         #_verbose('Fetching information about target {} from database'.format(iid)
         sql = 'select name, path from {} where _id=?'.format(self.TABLE_ITEMS)
-        name, path = self.db.execute(sql, (iid,)).fetchone()
+        data = self.db.execute(sql, (iid,)).fetchone()
 
-        return {'name':name, 'path':path}
+        if data:
+            return {'name':data[0], 'path':data[1]}
+
+        return None
 
     def insertTarget(self, name, path):
         '''

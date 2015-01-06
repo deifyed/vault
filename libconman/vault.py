@@ -89,7 +89,6 @@ class Vault():
         '''
             Deletes file from vault and removes database information
         '''
-        target = self.db.getTarget(iid)
         vault_file = os.path.join(self.VAULT_DIR, str(iid))
 
         # Removes the link from the vault
@@ -106,11 +105,13 @@ class Vault():
         '''
         for index in iid:
             target = self.db.getTarget(index)
-            origin = os.path.join(self.VAULT_DIR, str(index))
 
-            self._verbose('Deploying id {} from {} to {} with the name {}'
-                    .format(index, origin, target['path'], target['name']))
-            self._deploy(index, target['path'], target['name'])
+            if target:
+                origin = os.path.join(self.VAULT_DIR, str(index))
+
+                self._verbose('Deploying id {} from {} to {} with the name {}'
+                        .format(index, origin, target['path'], target['name']))
+                self._deploy(index, target['path'], target['name'])
 
         self._verbose('Deploy complete')
 
