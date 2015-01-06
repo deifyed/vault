@@ -8,8 +8,8 @@ from os import (
 import os.path
 import sqlite3
 
-VAULT_DIR = os.path.expanduser('~') + '/.sault/'
-DB_PATH = VAULT_DIR + '.saultdb'
+VAULT_DIR = os.path.expanduser('~') + '/.conman/'
+DB_PATH = VAULT_DIR + '.condb'
 
 # Tables
 TABLE_ITEMS = 'items'
@@ -112,7 +112,7 @@ class Vault():
             return
 
         # Create a link in the vault
-        self._verbose('Linking target from vault to origin')
+        self._verbose('Linking target from origin to vault')
         link(target, os.path.join(VAULT_DIR, str(_id)))
 
         self._verbose('Securing finished')

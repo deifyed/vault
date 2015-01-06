@@ -1,4 +1,4 @@
-vault
+conman - Config Manager
 =====
 
 Convenient way to store all your files(read configs) and folders(read containers containing alot of configs) in one folder for version controll.
@@ -6,15 +6,15 @@ Convenient way to store all your files(read configs) and folders(read containers
 How it works?
 =====
 
-It creates a hard link of the target file inside ~/.vault and saves the path of the target. This way you can version control or rsync ~/.vault and deploy these files if needed later (after a format or if they accidentaly gets deleted).
+It creates a hard link of the target file inside ~/.conman and saves the path of the target. This way you can version control or rsync ~/.conman and deploy these files if needed later (after a format or if they accidentaly gets deleted).
 
 Usage
 =====
 
-vault --secure file.cfg Creates a link of file.cfg inside ~/.vault
-vault --recursive --secure folder Creates a link for the files inside folder and subfolders of folder inside ~/.vault 
-vault --deploy id Creates a link from ~/.vault/id to where the original file was placed
-vault --list Lists all the secured files
+conman --secure file.cfg Creates a link of file.cfg inside ~/.conman
+conman --recursive --secure folder Creates a link for the files inside folder and subfolders of folder inside ~/.conman
+conman --deploy id Creates a link from ~/.conman/id to where the original file was placed
+conman --list Lists all the secured files
 
 Installation
 =====
@@ -22,7 +22,7 @@ Installation
 1. git clone https://github.com/deifyed/vault.git
 2. cd vault
 3. python setup.py sdist
-4. pip install dist/vault-*.tar.gz
+4. pip install dist/conman-*.tar.gz
 
 TODO
 =====
