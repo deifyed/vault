@@ -8,8 +8,8 @@ from os import (
 import os.path
 import sqlite3
 
-VAULT_DIR = os.path.expanduser('~') + '/.vault/'
-DB_PATH = VAULT_DIR + '.vaultdb'
+VAULT_DIR = os.path.expanduser('~') + '/.sault/'
+DB_PATH = VAULT_DIR + '.saultdb'
 
 # Tables
 TABLE_ITEMS = 'items'
