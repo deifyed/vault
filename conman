@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import argparse
-from libvault import Vault
+from libconman import Vault
 
 NAME = ''
 DESCRIPTION = '''Saves a file or a directory to a predefined location for easy version control backup'''
