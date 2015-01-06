@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+'''
+    Conman interface
+    Author: Julius Pedersen <deifyed+conman@gmail.com>
+'''
 import argparse
 from libconman.vault import Vault
 from libconman.configuration import config

@@ -29,4 +29,3 @@ TODO
 
 It's a pretty basic application and I don't plan on adding much more functionality, but the current TODO is:
 * Improve argparsing. Maybe make exclusive groups for secure, deploy and list commands
-* Improved formatting for conman -l

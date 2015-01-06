@@ -1,13 +1,16 @@
+'''
+    Initializes configuration settings
+    Author: Julius Pedersen <deifyed+conman@gmail.com>
+'''
 import configparser
 import os.path
 
-CONFIG_PATHS = [
-    os.path.expanduser('~/.config/conman'),
-]
-
 ROOT_DIR = os.path.expanduser('~/.conman')
 
-_DEFAULTS = {
+### Creating the config
+config = configparser.ConfigParser()
+# Initializing default vaules
+config.read_dict({
     # General settings
     'general': {
         'conman_directory': ROOT_DIR,
@@ -17,18 +20,12 @@ _DEFAULTS = {
     # Database specific settings
     'database': {
         'path': os.path.join(ROOT_DIR, '.condb'),
-    }
-}
-
-def initConfig():
-    config = configparser.ConfigParser()
-
-    config.read_dict(_DEFAULTS)
-    config.read(CONFIG_PATHS)
-
-    return config
-
-config = initConfig()
+    },
+})
+# Overwriting default values with user settings
+config.read([
+    os.path.expanduser('~/.config/conman'),
+])
 
 ### Tools
 def verbose(msg):

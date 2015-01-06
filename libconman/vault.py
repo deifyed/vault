@@ -1,3 +1,7 @@
+'''
+    The core of conman. Connects all the different parts of conman.
+    Author: Julius Pedersen <deifyed+conman@gmail.com>
+'''
 # Python libs
 import os.path
 
@@ -16,7 +20,13 @@ class Vault():
 
         self.db = getDataCommunicator()
 
-    def _secureFolder(self, target, recursive):
+    def _fetchFilesFromFolder(self, target, recursive):
+        '''
+            Fetches files from the target directory, and - if recursive
+            mode is on, all subdirectories.
+
+            Returns a list of all found files
+        '''
         directory_items = os.walk(target)
 
         # If recursive is false, fetch only the first tuple
@@ -32,19 +42,17 @@ class Vault():
 
     def secure(self, targets, recursive):
         '''
-            Saves information about a target file or a folder and proceedes to:
-            moves target to the vault directory and
-            links the target in the vault to the original path
+            Saves information about each target file and/or folder and
+            creates a hard link from the file(s) to the vault directory
         '''
         for target in targets:
             if os.path.isfile(target):
                 path, name = os.path.split(target)
 
                 target = Target(name, path)
-                target.save()
                 target.secure()
             else:
-                targets += self._secureFolder(target, recursive)
+                targets += self._fetchFilesFromFolder(target, recursive)
 
     def remove(self, iid):
         '''
@@ -52,7 +60,7 @@ class Vault():
         '''
         target = Target.getTarget(iid)
 
-        target.delete()
+        return target.delete()
 
     def deploy(self, iid):
         '''
@@ -62,17 +70,15 @@ class Vault():
             target = self.db.getTarget(index)
 
             if target:
-                origin = os.path.join(self.VAULT_DIR, str(index))
-
                 verbose('Deploying id {} from {} to {} with the name {}'
-                        .format(index, origin, target['path'], target['name']))
-                self._deploy(index, target['path'], target['name'])
+                        .format(index, origin, target.path, target.name))
+                target.deploy()
 
         verbose('Deploy complete')
 
     def deployAll(self):
         '''
-            Deploys all the items from the vault
+            Deploys all the items from the vault. Useful after a format
         '''
         targets = [Target.getTarget(iid) for i, n, p in self.db.listTargets()]
 

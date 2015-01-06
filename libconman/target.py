@@ -7,6 +7,10 @@ from libconman.configuration import config, verbose
 
 class Target():
     def getTarget(iid):
+        '''
+            A static method which returns a Target object identified by
+            iid. Returns None if a Target object was not found
+        '''
         db = getDataCommunicator()
 
         verbose('Loading target with id {}'.format(iid))
@@ -28,6 +32,9 @@ class Target():
 
         self.db = getDataCommunicator()
 
+    def __str__(self):
+        return self.name
+
     @property
     def vault_path(self):
         if self._id == -1:
@@ -40,7 +47,7 @@ class Target():
 
     def delete(self):
         '''
-            Deletes file from vault and removes database information
+            Deletes link from vault and removes database information
         '''
         if not self._id:
             verbose('This target does not have an id')
@@ -68,7 +75,7 @@ class Target():
         verbose('Creating a hard link from {} to {} directory'.format(
             str(self), config['general']['conman_directory']   
         ))
-        self.deploy()
+        link(self.real_path, self.vault_path)
 
     def deploy(self):
         '''

@@ -1,3 +1,7 @@
+'''
+    Handles database interaction
+    Author: Julius Pedersen <deifyed+conman@gmail.com>
+'''
 # Python libs
 import os.path
 import sqlite3
@@ -8,6 +12,7 @@ from libconman.configuration import config
 __DATA_COMMUNICATOR = None
 
 class DataCommunicator():
+    ''' The database interface '''
     def __init__(self, verbose=False):
         self.verbose = verbose
         self.TABLE_ITEMS = 'items'
@@ -31,7 +36,6 @@ class DataCommunicator():
         '''
             Returns a dictionary containing information about a certain target
         '''
-        #_verbose('Fetching information about target {} from database'.format(iid)
         sql = 'select name, path from {} where _id=?'.format(self.TABLE_ITEMS)
         data = self.db.execute(sql, (iid,)).fetchone()
 
@@ -73,6 +77,7 @@ class DataCommunicator():
         return [(iid, name, path) for iid, name, path in cursor]
 
 def getDataCommunicator():
+    ''' Gets the database communicator singleton '''
     global __DATA_COMMUNICATOR
 
     if not __DATA_COMMUNICATOR:
