@@ -5,29 +5,21 @@
 import configparser
 import os.path
 
-ROOT_DIR = os.path.expanduser('~/.conman')
-
-### Creating the config
-config = configparser.ConfigParser()
-# Initializing default vaules
-config.read_dict({
-    # General settings
-    'general': {
-        'conman_directory': ROOT_DIR,
-        'verbose': False,
-    },
-
-    # Database specific settings
-    'database': {
-        'path': os.path.join(ROOT_DIR, '.condb'),
-    },
-})
-# Overwriting default values with user settings
-config.read([
+### Creating the config parser
+__CONFIG = configparser.ConfigParser()
+# Get user settings
+__CONFIG.read([
     os.path.expanduser('~/.config/conman'),
 ])
 
-### Tools
-def verbose(msg):
-    if config.getboolean('general', 'verbose'):
-        print(msg)
+### General settings
+# Conman root directory
+CONMAN_PATH = __CONFIG.get('general', 'conman_directory',
+        fallback=os.path.expanduser('~/.conman'))
+# Verbose setting
+VERBOSE = __CONFIG.get('general', 'verbose',
+        fallback=False)
+
+### Database settings
+DATABASE_PATH = __CONFIG.get('database', 'path',
+        fallback=os.path.join(CONMAN_PATH, '.condb'))

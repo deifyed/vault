@@ -6,13 +6,13 @@
 import os.path
 
 # Custom libs
-from libconman.configuration import config, verbose
+from libconman import configuration as conf, verbose
 from libconman.database import getDataCommunicator
 from libconman.target import Target
 
 class Vault():
     def __init__(self):
-        self.VAULT_DIR = config['general']['conman_directory']
+        self.VAULT_DIR = conf.CONMAN_PATH 
 
         # Creates the vault directory if it doesn't exist
         if not os.path.isdir(self.VAULT_DIR):
@@ -47,7 +47,7 @@ class Vault():
         '''
         for target in targets:
             if os.path.isfile(target):
-                path, name = os.path.split(target)
+                path, name = os.path.split(os.path.realpath(target))
 
                 target = Target(name, path)
                 target.secure()
@@ -67,11 +67,11 @@ class Vault():
             Links an item from the vault to the original path
         '''
         for index in iid:
-            target = self.db.getTarget(index)
+            target = Target.getTarget(index)
 
             if target:
                 verbose('Deploying id {} from {} to {} with the name {}'
-                        .format(index, origin, target.path, target.name))
+                        .format(index, target.vault_path, target.path, target.name))
                 target.deploy()
 
         verbose('Deploy complete')

@@ -1,9 +1,10 @@
 # Python libs
 import os.path
+from os import link, makedirs
 
 # Custom libs
+from libconman import configuration as conf, verbose
 from libconman.database import getDataCommunicator
-from libconman.configuration import config, verbose
 
 class Target():
     def getTarget(iid):
@@ -40,7 +41,7 @@ class Target():
         if self._id == -1:
             return None
         if not self._vault_path:
-            self._vault_path = os.path.join(config['general']['conman_path'],
+            self._vault_path = os.path.join(conf.CONMAN_PATH,
                     str(self._id))
 
         return self._vault_path 
@@ -73,7 +74,7 @@ class Target():
         self._id = self.db.insertTarget(self.name, self.path)
 
         verbose('Creating a hard link from {} to {} directory'.format(
-            str(self), config['general']['conman_directory']   
+            str(self), conf.CONMAN_PATH   
         ))
         link(self.real_path, self.vault_path)
 

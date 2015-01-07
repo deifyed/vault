@@ -7,19 +7,18 @@ import os.path
 import sqlite3
 
 # Custom libs
-from libconman.configuration import config
+from libconman import configuration as conf
 
 __DATA_COMMUNICATOR = None
 
 class DataCommunicator():
     ''' The database interface '''
-    def __init__(self, verbose=False):
-        self.verbose = verbose
+    def __init__(self):
         self.TABLE_ITEMS = 'items'
 
         sql = None
 
-        if not os.path.isfile(config['database']['path']):
+        if not os.path.isfile(conf.DATABASE_PATH):
             sql = '''create table if not exists {} (
                 _id integer primary key autoincrement,
                 name varchar(254),
@@ -27,7 +26,7 @@ class DataCommunicator():
                 UNIQUE(name, path)
             );'''.format(self.TABLE_ITEMS)
 
-        self.db = sqlite3.connect(config['database']['path'])
+        self.db = sqlite3.connect(conf.DATABASE_PATH)
 
         if sql:
             self.db.execute(sql)

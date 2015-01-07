@@ -3,9 +3,12 @@
     Conman interface
     Author: Julius Pedersen <deifyed+conman@gmail.com>
 '''
+# Python libs
 import argparse
+
+# Custom libs
+from libconman import configuration as conf
 from libconman.vault import Vault
-from libconman.configuration import config
 
 DESCRIPTION = '''Saves a file or a directory to a predefined location for easy version control backup'''
 
@@ -15,7 +18,7 @@ parser = argparse.ArgumentParser(description=DESCRIPTION)
 parser.add_argument('-d', '--deploy', metavar='id', type=int, nargs='+',
     help='deploys one or several file(s) or folder(s) from the vault to the original location')
 parser.add_argument('--deploy-all', action='store_true',
-    help='deploys all the files in the vault. Useful for restoring after a reinstall of os')
+    help='deploys all the files in the vault. Useful for restoring after a reinstall of a format')
 
 # Listing saved files and folders
 parser.add_argument('-l', '--list', action='store_true',
@@ -23,7 +26,7 @@ parser.add_argument('-l', '--list', action='store_true',
 
 # Unsecure a file or folder
 parser.add_argument('--remove', metavar='target', type=str,
-    help='remove target from vault and restores the original')
+    help='remove target from vault')
 
 # Secure a file or folder
 parser.add_argument('-s', '--secure', metavar='target', type=str, nargs='+',
@@ -38,7 +41,7 @@ parser.add_argument('-v', '--verbose', action='store_true',
 args = parser.parse_args()
 
 if args.verbose:
-    config['general']['verbose'] = 'true'
+    conf.VERBOSE = True
 
 vault = Vault()
 
@@ -58,6 +61,6 @@ if(args.remove):
     vault.remove(args.remove)
 
 if(args.list):
-    print('{:10}\t{:20}\t{}'.format('id', 'name', 'path'))
+    print('{:4}\t{:15}\t{}'.format('id', 'name', 'path'))
     for iid, name, path in vault.listTargets():
-        print('[{:10}]\t{:20}\t{}'.format(iid, name, path))
+        print('{:<4}\t{:<15}\t{:<}'.format(iid, name, path))
