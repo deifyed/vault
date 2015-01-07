@@ -80,7 +80,7 @@ class Vault():
         '''
             Deploys all the items from the vault. Useful after a format
         '''
-        targets = [Target.getTarget(iid) for i, n, p in self.db.listTargets()]
+        targets = [Target.getTarget(iid) for iid, n, p in self.db.listTargets()]
 
         for target in targets:
             target.deploy()
