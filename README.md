@@ -12,8 +12,11 @@ Usage
 =====
 
 conman sync file.cfg Creates a link of file.cfg inside ~/.conman
+
 conman sync --recursive folder Creates a link for the files inside folder and subfolders of folder inside ~/.conman
+
 conman deploy id Creates a link from ~/.conman/id to where the original file was placed
+
 conman query Lists all the secured files
 
 Installation
