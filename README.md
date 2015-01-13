@@ -11,10 +11,10 @@ It creates a hard link of the target file inside ~/.conman and saves the path of
 Usage
 =====
 
-conman --secure file.cfg Creates a link of file.cfg inside ~/.conman
-conman --recursive --secure folder Creates a link for the files inside folder and subfolders of folder inside ~/.conman
-conman --deploy id Creates a link from ~/.conman/id to where the original file was placed
-conman --list Lists all the secured files
+conman sync file.cfg Creates a link of file.cfg inside ~/.conman
+conman sync --recursive folder Creates a link for the files inside folder and subfolders of folder inside ~/.conman
+conman deploy id Creates a link from ~/.conman/id to where the original file was placed
+conman query Lists all the secured files
 
 Installation
 =====
