@@ -6,13 +6,16 @@
 import os.path
 
 # Custom libs
-from libconman import configuration as conf, verbose
+from libconman import verbose
+from libconman.configuration import Configuration
 from libconman.database import getDataCommunicator
 from libconman.target import Target
 
+config = Configuration()
+
 class Vault():
     def __init__(self):
-        self.VAULT_DIR = conf.CONMAN_PATH 
+        self.VAULT_DIR = config.CONMAN_PATH 
 
         # Creates the vault directory if it doesn't exist
         if not os.path.isdir(self.VAULT_DIR):
@@ -58,9 +61,10 @@ class Vault():
         '''
             Deletes file from vault and removes database information
         '''
-        target = Target.getTarget(iid)
+        for index in iid:
+            target = Target.getTarget(index)
 
-        return target.delete()
+            target.delete()
 
     def deploy(self, iid):
         '''

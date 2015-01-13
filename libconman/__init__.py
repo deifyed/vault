@@ -1,5 +1,7 @@
-import libconman.configuration as conf
+from libconman.configuration import Configuration 
+
+config = Configuration()
 
 def verbose(msg):
-    if conf.VERBOSE:
+    if config.VERBOSE:
         print(msg)

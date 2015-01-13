@@ -5,10 +5,14 @@
 '''
 # Python libs
 import argparse
+import os.path
 
 # Custom libs
-from libconman import configuration as conf
+from libconman import verbose
+from libconman.configuration import Configuration
 from libconman.vault import Vault
+
+config = Configuration()
 
 DESCRIPTION = '''Makes backuping config files a breeze by hard linking the
 config files into a single folder'''
@@ -17,6 +21,10 @@ parser = argparse.ArgumentParser(description=DESCRIPTION)
 # Verbose
 parser.add_argument('-v', '--verbose', action='store_true',
     help='enable verbose messages')
+# Alternative conman directory
+parser.add_argument('-c', '--conman-directory', metavar='target', type=str,
+        help='use target directory as the conman directory')
+
 # Sub parsers
 sub_parsers = parser.add_subparsers(help='description')
 
@@ -58,23 +66,30 @@ remove_parser.add_argument('remove', metavar='id', nargs='+', type=int,
         help='removes file synchronization for target identified by id')
 
 args = parser.parse_args()
-vault = Vault()
 
 ### Optional arguments
+# Verbose mode
 if args.verbose:
-    conf.VERBOSE = True
+    config.VERBOSE = True
+# Set alternative root directory
+if args.conman_directory:
+    config.CONMAN_PATH = os.path.realpath(args.conman_directory)
+    verbose('Using alternative conman directory {}'.format(config.CONMAN_PATH))
+
+vault = Vault()
+# Print out vault contents 
 if args.query:
     print('{:4}\t{:15}\t{}'.format('id', 'name', 'path'))
     for iid, name, path in vault.listTargets():
         print('{:<4}\t{:<15}\t{:<}'.format(iid, name, path))
 
 ### Required arguments
-if('synchronize' in args):
+if 'synchronize' in args:
     print('Synchronizing {}'.format(args.synchronize))
     vault.secure(args.synchronize, args.recursive)
 
-if('deploy' in args):
-    if(len(args.deploy) == 0):
+if 'deploy' in args:
+    if len(args.deploy) == 0:
         if args.all:
             print('Deploying all items from vault')
             vault.deployAll()
@@ -84,6 +99,6 @@ if('deploy' in args):
         print('Deploying {}'.format(args.deploy))
         vault.deploy(args.deploy)
 
-if('remove' in args):
+if 'remove' in args:
     print('Removing {}'.format(args.remove))
     vault.remove(args.remove)

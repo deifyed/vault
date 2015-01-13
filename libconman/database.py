@@ -7,18 +7,26 @@ import os.path
 import sqlite3
 
 # Custom libs
-from libconman import configuration as conf
+from libconman.configuration import Configuration 
+
+config = Configuration()
 
 __DATA_COMMUNICATOR = None
 
 class DataCommunicator():
     ''' The database interface '''
-    def __init__(self):
+    def __init__(self, db_path=None):
         self.TABLE_ITEMS = 'items'
+        self.db_path = db_path
+        
+        if not db_path:
+            self.db_path = os.path.join(config.CONMAN_PATH, '.condb')
+
+        print('db_path: ' + self.db_path)
 
         sql = None
 
-        if not os.path.isfile(conf.DATABASE_PATH):
+        if not os.path.isfile(self.db_path):
             sql = '''create table if not exists {} (
                 _id integer primary key autoincrement,
                 name varchar(254),
@@ -26,7 +34,7 @@ class DataCommunicator():
                 UNIQUE(name, path)
             );'''.format(self.TABLE_ITEMS)
 
-        self.db = sqlite3.connect(conf.DATABASE_PATH)
+        self.db = sqlite3.connect(self.db_path)
 
         if sql:
             self.db.execute(sql)
@@ -63,8 +71,14 @@ class DataCommunicator():
             Removes target information from vault database
         '''
         sql = 'delete from {} where _id=?'.format(self.TABLE_ITEMS)
-        self.db.execute(sql, (iid,))
-        self.db.commit()
+        cursor = self.db.execute(sql, (iid,))
+
+        if cursor.rowcount > 0:
+            self.db.commit()
+
+            return True
+
+        return False
 
     def listTargets(self):
         '''
